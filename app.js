@@ -4,8 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var session= require('express-session');
+
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+//var usersRouter = require('./routes/users');
 
 var app = express();
 
@@ -19,8 +21,40 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use(session({
+  secret: 'cursotn',
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.get('/' ,function(req, res){
+  var conocido = Boolean(req.session.nombre)
+
+  res.render('index', {
+title: 'sesiones en express.js',
+conocido: conocido,
+nombre: req.session.nombre
+ });
+
+});
+
+app.post('/ingrsar', function (req, res) {
+  console.log(req.body.nombre)
+  if (req.body.nombre) {
+    req.session.nombre = req.body.nombre
+  }
+  res.redirect('/');
+});
+
+app.get ('/salir', function (req, res){
+  req.session.destroy ();
+  res.redirect('/');
+});
+
+
+
+//app.use('/', indexRouter);
+//app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
